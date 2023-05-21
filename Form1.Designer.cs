@@ -94,6 +94,7 @@
             this.pictureBox0 = new System.Windows.Forms.PictureBox();
             this.start = new System.Windows.Forms.Button();
             this.title = new System.Windows.Forms.Label();
+            this.label = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox63)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox62)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox61)).BeginInit();
@@ -941,19 +942,30 @@
             // 
             // title
             // 
-            this.title.AutoSize = true;
             this.title.Font = new System.Drawing.Font("ＭＳ ゴシック", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.title.Location = new System.Drawing.Point(172, 9);
+            this.title.Location = new System.Drawing.Point(81, 15);
             this.title.Name = "title";
-            this.title.Size = new System.Drawing.Size(123, 35);
+            this.title.Size = new System.Drawing.Size(312, 35);
             this.title.TabIndex = 65;
-            this.title.Text = "オセロ";
+            this.title.Text = "オセロ(リバーシ)";
+            this.title.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label
+            // 
+            this.label.Font = new System.Drawing.Font("ＭＳ ゴシック", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.label.Location = new System.Drawing.Point(138, 60);
+            this.label.Name = "label";
+            this.label.Size = new System.Drawing.Size(201, 23);
+            this.label.TabIndex = 66;
+            this.label.Text = "スタートを押してください";
+            this.label.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(474, 467);
+            this.Controls.Add(this.label);
             this.Controls.Add(this.title);
             this.Controls.Add(this.start);
             this.Controls.Add(this.pictureBox63);
@@ -1088,7 +1100,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox0)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -1160,6 +1171,7 @@
         private System.Windows.Forms.PictureBox pictureBox63;
         private System.Windows.Forms.Button start;
         private System.Windows.Forms.Label title;
+        private System.Windows.Forms.Label label;
     }
 }
 

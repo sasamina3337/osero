@@ -17,11 +17,13 @@ namespace osero
 
         public int[,] board2 = new int[8, 8];
 
-        public int player = 0;
-
-        public int gameCount = 0;
+        public int player, gameCount, step;
 
         public Boolean turn = true;
+
+        public string[] gameStep = {"スタート", "リセット", "リスタート"};
+
+        public string[] turnName = { "先手(黒)", "後手(白)" };
 
         public enum stoneColor
         {
@@ -44,7 +46,10 @@ namespace osero
 
         private void start_Click(object sender, EventArgs e)
         {
+            player = gameCount = step = 0;
+            label.Text = turnName[player] + "の番です";
             boardEnable(true);
+            gameStepUp();
         }
 
         private void pictureBox_Click(object sender, EventArgs e)
@@ -63,6 +68,7 @@ namespace osero
 
             gameCount++;
             player = (player + 1) % 2;
+            label.Text = turnName[player] + "の番です";
         }
 
         public void boardEnable(Boolean b)
@@ -86,6 +92,12 @@ namespace osero
 
                 board2[row, col] = board1[i];
             }
+        }
+
+        public void gameStepUp()
+        {
+            step = (step + 1) % 2;
+            start.Text = gameStep[step];
         }
     }
 }
