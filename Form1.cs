@@ -48,7 +48,7 @@ namespace osero
         {
             player = gameCount = step = 0;
             label.Text = turnName[player] + "の番です";
-            boardEnable(true);
+            boardEnable(true, true);
             gameStepUp();
         }
 
@@ -71,7 +71,7 @@ namespace osero
             label.Text = turnName[player] + "の番です";
         }
 
-        public void boardEnable(Boolean b)
+        public void boardEnable(Boolean b,Boolean o)
         {
             Control[] c;
             PictureBox pic;
@@ -80,6 +80,10 @@ namespace osero
                 c = this.Controls.Find("pictureBox" + i.ToString(), true);
                 pic = (PictureBox)c[0];
                 pic.Enabled = b;
+                if (o)
+                {
+                    pic.Image = stoneImg[(stoneColor)0];
+                }
             }
         }
 
@@ -93,6 +97,8 @@ namespace osero
                 board2[row, col] = board1[i];
             }
         }
+
+
 
         public void gameStepUp()
         {
