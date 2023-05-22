@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -16,6 +17,19 @@ namespace osero
         public int[] board1 = new int[64];
 
         public int[,] board2 = new int[8, 8];
+
+        public int[] memoryBoard = new int[64];
+
+        public int[,] resetBoard = new int[8, 8];
+
+        int[,] firstStone = new int[8, 8] { {0, 0, 0, 0, 0, 0, 0, 0},
+                                            {0, 0, 0, 0, 0, 0, 0, 0},
+                                            {0, 0, 0, 0, 0, 0, 0, 0},
+                                            {0, 0, 0, 2, 1, 0, 0, 0},
+                                            {0, 0, 0, 1, 2, 0, 0, 0},
+                                            {0, 0, 0, 0, 0, 0, 0, 0},
+                                            {0, 0, 0, 0, 0, 0, 0, 0},
+                                            {0, 0, 0, 0, 0, 0, 0, 0} };
 
         public int player, gameCount, step;
 
@@ -48,7 +62,9 @@ namespace osero
         {
             player = gameCount = step = 0;
             label.Text = turnName[player] + "の番です";
-            boardEnable(true, true);
+            boardOut(firstStone);
+            boardEnable(true);
+            Drow(memoryBoard);
             gameStepUp();
         }
 
@@ -66,12 +82,19 @@ namespace osero
             clickBox.Image = img;
             clickBox.Enabled = false;
 
+            if(gameCount + 1 >= board1.Length)
+            {
+                boardEnable(false);
+                gameStepUp();
+                return;
+            }
+
             gameCount++;
             player = (player + 1) % 2;
             label.Text = turnName[player] + "の番です";
         }
 
-        public void boardEnable(Boolean b,Boolean o)
+        public void boardEnable(Boolean b)
         {
             Control[] c;
             PictureBox pic;
@@ -80,10 +103,19 @@ namespace osero
                 c = this.Controls.Find("pictureBox" + i.ToString(), true);
                 pic = (PictureBox)c[0];
                 pic.Enabled = b;
-                if (o)
-                {
-                    pic.Image = stoneImg[(stoneColor)0];
-                }
+            }
+        }
+
+        public void Drow(int[] n)
+        {
+            Control[] c;
+            PictureBox pic;
+            for (int i = 0; i < board1.Length; i++)
+            {
+                c = this.Controls.Find("pictureBox" + i.ToString(), true);
+                pic = (PictureBox)c[0];
+                pic.Enabled = (n[i] == 0);
+                pic.Image = stoneImg[(stoneColor)n[i]];
             }
         }
 
@@ -98,12 +130,29 @@ namespace osero
             }
         }
 
+        public void boardOut(int[,] n)
+        {
+            int cnt = 0;
+
+            for(int i = 0; i < n.GetLength(0); i++)
+            {
+                for(int j = 0; j < n.GetLength(1); j++)
+                {
+                    memoryBoard[cnt] = n[i,j];
+                    cnt++;
+                }
+            }
+        }
 
 
         public void gameStepUp()
         {
-            step = (step + 1) % 2;
+            step = (step + 1) % 3;
             start.Text = gameStep[step];
+            if(step != 1)
+            {
+                label.Text = gameStep[step] + "を押してください";
+            }
         }
     }
 }
