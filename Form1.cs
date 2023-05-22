@@ -18,8 +18,6 @@ namespace osero
 
         public int[,] board2 = new int[8, 8];
 
-        public int[] memoryBoard = new int[64];
-
         public int[,] resetBoard = new int[8, 8];
 
         int[,] firstStone = new int[8, 8] { {0, 0, 0, 0, 0, 0, 0, 0},
@@ -60,11 +58,12 @@ namespace osero
 
         private void start_Click(object sender, EventArgs e)
         {
-            player = gameCount = step = 0;
+            player = step = 0;
+            gameCount = 4;
             label.Text = turnName[player] + "の番です";
             boardOut(firstStone);
             boardEnable(true);
-            Drow(memoryBoard);
+            Drow(board1);
             gameStepUp();
         }
 
@@ -134,13 +133,10 @@ namespace osero
         {
             int cnt = 0;
 
-            for(int i = 0; i < n.GetLength(0); i++)
+            foreach (int m in n)
             {
-                for(int j = 0; j < n.GetLength(1); j++)
-                {
-                    memoryBoard[cnt] = n[i,j];
-                    cnt++;
-                }
+                board1[cnt] = m;
+                cnt++;
             }
         }
 
