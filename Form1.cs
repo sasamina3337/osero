@@ -85,7 +85,7 @@ namespace osero
             {
                 boardEnable(false);
                 gameStepUp();
-                return;
+                judge(board1);
             }
 
             gameCount++;
@@ -140,7 +140,6 @@ namespace osero
             }
         }
 
-
         public void gameStepUp()
         {
             step = (step + 1) % 3;
@@ -148,6 +147,37 @@ namespace osero
             if(step != 1)
             {
                 label.Text = gameStep[step] + "を押してください";
+            }
+        }
+
+        private void judge(int[] f)
+        {
+            int b, w;
+            b = w = 0;
+
+            foreach (int n in f)
+            {
+                if (n == 1)
+                {
+                    b++;
+                }
+                else if (n == 2)
+                {
+                    w++;
+                }
+            }
+
+            if (b > w)
+            {
+                MessageBox.Show("先行(黒)の勝利");
+            }
+            else if (w > b)
+            {
+                MessageBox.Show("後攻(白)の勝利");
+            }
+            else
+            {
+                MessageBox.Show("引き分けです");
             }
         }
     }
