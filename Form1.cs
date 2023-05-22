@@ -14,24 +14,35 @@ namespace osero
 {
     public partial class Form1 : Form
     {
-        public int[] board1 = new int[64];
+        public int[] board1 = new int[100];
 
-        public int[,] board2 = new int[8, 8];
+        public int[,] board2 = new int[10, 10];
 
-        public int[,] resetBoard = new int[8, 8];
+        public int[,] resetBoard = new int[10, 10]{{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                   {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1},};
 
-        int[,] firstStone = new int[8, 8] { {0, 0, 0, 0, 0, 0, 0, 0},
-                                            {0, 0, 0, 0, 0, 0, 0, 0},
-                                            {0, 0, 0, 0, 0, 0, 0, 0},
-                                            {0, 0, 0, 2, 1, 0, 0, 0},
-                                            {0, 0, 0, 1, 2, 0, 0, 0},
-                                            {0, 0, 0, 0, 0, 0, 0, 0},
-                                            {0, 0, 0, 0, 0, 0, 0, 0},
-                                            {0, 0, 0, 0, 0, 0, 0, 0} };
+        public int[,] firstStone = new int[10, 10]{{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                {-1, 0, 0, 0, 2, 1, 0, 0, 0, -1},
+                                                {-1, 0, 0, 0, 1, 2, 0, 0, 0, -1},
+                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
+                                                {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1},};
 
         public int player, gameCount, step;
 
-        public Boolean turn = true;
+        public Boolean stoneJudge = true;
 
         public string[] gameStep = {"スタート", "リセット", "リスタート"};
 
@@ -75,6 +86,11 @@ namespace osero
             string nameBox = clickBox.Name;
             int numberBox = int.Parse(nameBox.Replace("pictureBox", ""));
             board1[numberBox] = player + 1;
+            if (!stoneJudge)
+            {
+                board1[numberBox] = 0;
+                return;
+            }
             boardIn(board1);
 
             Image img = stoneImg[nowStone];
@@ -86,6 +102,7 @@ namespace osero
                 boardEnable(false);
                 gameStepUp();
                 judge(board1);
+                return;
             }
 
             gameCount++;
@@ -149,6 +166,23 @@ namespace osero
                 label.Text = gameStep[step] + "を押してください";
             }
         }
+
+        public int[,] selectStone(int[,] n, int x, int y)
+        {
+            int[,] cross = new int[3, 3];
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                        int p = i + x;
+                        int q = j + y;
+                        cross[i + 1, j + 1] = n[x, y];
+                }
+            }
+            return cross;
+        }
+
+        public Boolean 
 
         private void judge(int[] f)
         {
