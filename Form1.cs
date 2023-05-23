@@ -219,12 +219,11 @@ namespace osero
                     if (x >= 0 && x < board2.GetLength(0) && y >= 0 && y < board2.GetLength(1))
                     {
                         int d = board2[x, y];
-                        if (d == m)
+                        if (d != n)
                         {
-                            stoneJudge = false;
                             rows.RemoveAt(j);
                             cols.RemoveAt(j);
-                            break;
+                            stoneJudge = false;
                         }
                     }
                 }
