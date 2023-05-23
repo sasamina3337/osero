@@ -14,31 +14,27 @@ namespace osero
 {
     public partial class Form1 : Form
     {
-        public int[] board1 = new int[100];
+        public int[] board1 = new int[64];
 
-        public int[,] board2 = new int[10, 10];
+        public int[,] board2 = new int[8, 8];
 
-        public int[,] resetBoard = new int[10, 10]{{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                   {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                   {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1},};
+        public int[,] resetBoard = new int[8, 8]{{0, 0, 0, 0, 0, 0, 0, 0,},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0,}};
 
-        public int[,] firstStone = new int[10, 10]{{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
-                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                {-1, 0, 0, 0, 2, 1, 0, 0, 0, -1},
-                                                {-1, 0, 0, 0, 1, 2, 0, 0, 0, -1},
-                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                {-1, 0, 0, 0, 0, 0, 0, 0, 0, -1},
-                                                {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1},};
+        public int[,] firstStone = new int[8, 8]{{0, 0, 0, 0, 0, 0, 0, 0},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0},
+                                                 {0, 0, 0, 1, 2, 0, 0, 0},
+                                                 {0, 0, 0, 2, 1, 0, 0, 0},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0},
+                                                 {0, 0, 0, 0, 0, 0, 0, 0}};
 
         public int player, gameCount, step;
 
@@ -86,6 +82,7 @@ namespace osero
             string nameBox = clickBox.Name;
             int numberBox = int.Parse(nameBox.Replace("pictureBox", ""));
             board1[numberBox] = player + 1;
+            selectStone(numberBox);
             if (!stoneJudge)
             {
                 board1[numberBox] = 0;
@@ -167,22 +164,77 @@ namespace osero
             }
         }
 
-        public int[,] selectStone(int[,] n, int x, int y)
+        public int[,] aroundStone(int x, int y)
         {
             int[,] cross = new int[3, 3];
             for (int i = -1; i <= 1; i++)
             {
                 for (int j = -1; j <= 1; j++)
                 {
-                        int p = i + x;
-                        int q = j + y;
-                        cross[i + 1, j + 1] = n[x, y];
+                    int p = i + x;
+                    int q = j + y;
+                    if (p >= 0 && p < board2.GetLength(0) && q >= 0 && q < board2.GetLength(1))
+                    {
+                        cross[i + 1, j + 1] = board2[p, q];
+                    }
                 }
             }
             return cross;
         }
 
-        public Boolean 
+        public void selectStone(int n)
+        {
+            int row = n / board2.GetLength(0);
+            int col = n % board2.GetLength(1);
+            int[,] cross = aroundStone(row, col);
+
+            List<int> rows = new List<int>();
+            List<int> cols = new List<int>();
+
+            int m = (n + 1) % 2;
+
+            for (int i = 0; i < cross.GetLength(0); i++)
+            {
+                for (int j = 0; j < cross.GetLength(1); j++)
+                {
+                    int x = row + (i - 1);
+                    int y = col + (j - 1);
+                    if (x >= 0 && x < board2.GetLength(0) && y >= 0 && y < board2.GetLength(1))
+                    {
+                        if (cross[i, j] == m)
+                        {
+                            rows.Add(i);
+                            cols.Add(j);
+                        }
+                    }
+                }
+            }
+
+            for (int i = 2; i <= board2.GetLength(0) - 1; i++)
+            {
+                for (int j = 0; j < rows.Count; j++)
+                {
+                    int x = row + (rows[j] * i);
+                    int y = col + (cols[j] * i);
+                    if (x >= 0 && x < board2.GetLength(0) && y >= 0 && y < board2.GetLength(1))
+                    {
+                        int d = board2[x, y];
+                        if (d == m)
+                        {
+                            stoneJudge = false;
+                            rows.RemoveAt(j);
+                            cols.RemoveAt(j);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        public Boolean aroundCheck(int[,] n)
+        {
+            return true;
+        }
 
         private void judge(int[] f)
         {
