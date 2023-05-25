@@ -3,6 +3,7 @@ using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Deployment.Internal;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -14,9 +15,8 @@ namespace osero
 {
     public partial class Form1 : Form
     {
-        public int[] board1 = new int[64];
 
-        public int[,] board2 = new int[8, 8];
+        public int[,] board = new int[8, 8];
 
         public int[,] resetBoard = new int[8, 8]{{0, 0, 0, 0, 0, 0, 0, 0,},
                                                  {0, 0, 0, 0, 0, 0, 0, 0,},
@@ -40,7 +40,7 @@ namespace osero
 
         public Boolean stoneJudge = true;
 
-        public string[] gameStep = {"スタート", "リセット", "リスタート"};
+        public string[] gameStep = { "スタート", "リセット", "リスタート" };
 
         public string[] turnName = { "先手(黒)", "後手(白)" };
 
@@ -68,37 +68,38 @@ namespace osero
             player = step = 0;
             gameCount = 4;
             label.Text = turnName[player] + "の番です";
-            boardOut(firstStone);
+            Array.Copy(firstStone, board, resetBoard.Length);
             boardEnable(true);
-            Drow(board1);
+            Drow(board);
             gameStepUp();
         }
 
         private void pictureBox_Click(object sender, EventArgs e)
         {
-
+            stoneJudge = true;
             PictureBox clickBox = (PictureBox)sender;
             stoneColor nowStone = (stoneColor)(player + 1);
             string nameBox = clickBox.Name;
             int numberBox = int.Parse(nameBox.Replace("pictureBox", ""));
-            board1[numberBox] = player + 1;
+            int row = numberBox / board.GetLength(0);
+            int col = numberBox % board.GetLength(1);
+            board[row, col] = player + 1;
             selectStone(numberBox);
             if (!stoneJudge)
             {
-                board1[numberBox] = 0;
+                board[row, col] = 0;
                 return;
             }
-            boardIn(board1);
 
             Image img = stoneImg[nowStone];
             clickBox.Image = img;
             clickBox.Enabled = false;
 
-            if(gameCount + 1 >= board1.Length)
+            if (gameCount + 1 >= board.Length)
             {
                 boardEnable(false);
                 gameStepUp();
-                judge(board1);
+                judge(board);
                 return;
             }
 
@@ -111,7 +112,7 @@ namespace osero
         {
             Control[] c;
             PictureBox pic;
-            for (int i = 0; i < board1.Length; i++)
+            for (int i = 0; i < board.Length; i++)
             {
                 c = this.Controls.Find("pictureBox" + i.ToString(), true);
                 pic = (PictureBox)c[0];
@@ -119,38 +120,21 @@ namespace osero
             }
         }
 
-        public void Drow(int[] n)
+        public void Drow(int[,] n)
         {
             Control[] c;
             PictureBox pic;
-            for (int i = 0; i < board1.Length; i++)
+            string boxName;
+            for (int i = 0; i < board.GetLength(0); i++)
             {
-                c = this.Controls.Find("pictureBox" + i.ToString(), true);
-                pic = (PictureBox)c[0];
-                pic.Enabled = (n[i] == 0);
-                pic.Image = stoneImg[(stoneColor)n[i]];
-            }
-        }
-
-        public void boardIn(int[] n)
-        {
-            for(int i = 0; i < board1.Length; i++)
-            {
-                int row = i / board2.GetLength(0);
-                int col = i % board2.GetLength(1);
-
-                board2[row, col] = board1[i];
-            }
-        }
-
-        public void boardOut(int[,] n)
-        {
-            int cnt = 0;
-
-            foreach (int m in n)
-            {
-                board1[cnt] = m;
-                cnt++;
+                for(int j = 0; j < board.GetLength(1); j++)
+                {
+                    boxName = Convert.ToString(i * board.GetLength(1) + j);
+                    c = this.Controls.Find("pictureBox" + boxName, true);
+                    pic = (PictureBox)c[0];
+                    pic.Enabled = (n[i,j] == 0) ;
+                    pic.Image = stoneImg[(stoneColor)n[i,j]];
+                }
             }
         }
 
@@ -158,7 +142,7 @@ namespace osero
         {
             step = (step + 1) % 3;
             start.Text = gameStep[step];
-            if(step != 1)
+            if (step != 1)
             {
                 label.Text = gameStep[step] + "を押してください";
             }
@@ -173,9 +157,9 @@ namespace osero
                 {
                     int p = i + x;
                     int q = j + y;
-                    if (p >= 0 && p < board2.GetLength(0) && q >= 0 && q < board2.GetLength(1))
+                    if (p >= 0 && p < board.GetLength(0) && q >= 0 && q < board.GetLength(1))
                     {
-                        cross[i + 1, j + 1] = board2[p, q];
+                        cross[i + 1, j + 1] = board[p, q];
                     }
                 }
             }
@@ -184,8 +168,8 @@ namespace osero
 
         public void selectStone(int n)
         {
-            int row = n / board2.GetLength(0);
-            int col = n % board2.GetLength(1);
+            int row = n / board.GetLength(0);
+            int col = n % board.GetLength(1);
             int[,] cross = aroundStone(row, col);
 
             List<int> rows = new List<int>();
@@ -199,7 +183,7 @@ namespace osero
                 {
                     int x = row + (i - 1);
                     int y = col + (j - 1);
-                    if (x >= 0 && x < board2.GetLength(0) && y >= 0 && y < board2.GetLength(1))
+                    if (x >= 0 && x < board.GetLength(0) && y >= 0 && y < board.GetLength(1))
                     {
                         if (cross[i, j] == m)
                         {
@@ -210,32 +194,58 @@ namespace osero
                 }
             }
 
-            for (int i = 2; i <= board2.GetLength(0) - 1; i++)
+            for (int i = 2; i <= board.GetLength(0) - 1; i++)
             {
                 for (int j = 0; j < rows.Count; j++)
                 {
                     int x = row + (rows[j] * i);
                     int y = col + (cols[j] * i);
-                    if (x >= 0 && x < board2.GetLength(0) && y >= 0 && y < board2.GetLength(1))
+                    if (x >= 0 && x < board.GetLength(0) && y >= 0 && y < board.GetLength(1))
                     {
-                        int d = board2[x, y];
+                        int d = board[x, y];
                         if (d != n)
                         {
                             rows.RemoveAt(j);
                             cols.RemoveAt(j);
                             stoneJudge = false;
+                            return;
+
                         }
                     }
                 }
             }
+
+            for (int i = 2; i <= board.GetLength(0) - 1; i++)
+            {
+                for (int j = 0; j < rows.Count; j++)
+                {
+                    int x = row + (rows[j] * i);
+                    int y = col + (cols[j] * i);
+                    if (x >= 0 && x < board.GetLength(0) && y >= 0 && y < board.GetLength(1))
+                    {
+                        int d = board[x, y];
+                        if (d != n)
+                        {
+                            while (board[x, y] != n)
+                            {
+                                board[x, y] = n;
+                                x -= rows[j];
+                                y -= cols[j];
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!stoneJudge)
+            {
+                player = (player + 1) % 2;
+                label.Text = turnName[player] + "の番です";
+            }
         }
 
-        public Boolean aroundCheck(int[,] n)
-        {
-            return true;
-        }
-
-        private void judge(int[] f)
+        private void judge(int[,] f)
         {
             int b, w;
             b = w = 0;
