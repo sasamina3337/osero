@@ -16,17 +16,9 @@ namespace osero
     public partial class Form1 : Form
     {
 
-        public int[,] board = new int[8, 8];
+        public int[,] board = new int[8, 8]; //盤面の配列
 
-        public int[,] resetBoard = new int[8, 8]{{0, 0, 0, 0, 0, 0, 0, 0,},
-                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
-                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
-                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
-                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
-                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
-                                                 {0, 0, 0, 0, 0, 0, 0, 0,},
-                                                 {0, 0, 0, 0, 0, 0, 0, 0,}};
-
+        //初期配置
         public int[,] firstStone = new int[8, 8]{{0, 0, 0, 0, 0, 0, 0, 0},
                                                  {0, 0, 0, 0, 0, 0, 0, 0},
                                                  {0, 0, 0, 0, 0, 0, 0, 0},
@@ -36,14 +28,13 @@ namespace osero
                                                  {0, 0, 0, 0, 0, 0, 0, 0},
                                                  {0, 0, 0, 0, 0, 0, 0, 0}};
 
-        public int player, gameCount, step;
+        public int currentPlayer, gameCount, step; //stepはgamestepを扱うために設定した数字
 
-        public Boolean stoneJudge = true;
+        public string[] gameStep = { "スタート", "リセット", "リスタート" }; //startボタンの変更文字
 
-        public string[] gameStep = { "スタート", "リセット", "リスタート" };
+        public string[] turnName = { "先手(黒)", "後手(白)" }; //labelに表示する現在のプレイヤー名
 
-        public string[] turnName = { "先手(黒)", "後手(白)" };
-
+        //石の色
         public enum stoneColor
         {
             none = 0,
@@ -51,6 +42,7 @@ namespace osero
             white = 2,
         }
 
+        //石の画像と色の対応辞書
         public Dictionary<stoneColor, Image> stoneImg = new Dictionary<stoneColor, Image>()
         {
             {stoneColor.none, null},
@@ -63,29 +55,28 @@ namespace osero
             InitializeComponent();
         }
 
+        //スタートクリック時の操作
         private void start_Click(object sender, EventArgs e)
         {
-            player = step = 0;
+            currentPlayer = step = 0;
             gameCount = 4;
-            label.Text = turnName[player] + "の番です";
-            Array.Copy(firstStone, board, resetBoard.Length);
+            label.Text = turnName[currentPlayer] + "の番です";
+            Array.Copy(firstStone, board, board.Length);
             boardEnable(true);
             Drow(board);
             gameStepUp();
         }
-
+        //盤面クリック時の操作
         private void pictureBox_Click(object sender, EventArgs e)
         {
-            stoneJudge = true;
             PictureBox clickBox = (PictureBox)sender;
-            stoneColor nowStone = (stoneColor)(player + 1);
+            stoneColor nowStone = (stoneColor)(currentPlayer + 1);
             string nameBox = clickBox.Name;
             int numberBox = int.Parse(nameBox.Replace("pictureBox", ""));
             int row = numberBox / board.GetLength(0);
             int col = numberBox % board.GetLength(1);
-            board[row, col] = player + 1;
-            selectStone(numberBox);
-            if (!stoneJudge)
+            board[row, col] = currentPlayer + 1;
+            if (selectStone(row, col))
             {
                 board[row, col] = 0;
                 return;
@@ -95,7 +86,9 @@ namespace osero
             clickBox.Image = img;
             clickBox.Enabled = false;
 
-            if (gameCount + 1 >= board.Length)
+            gameCount++;
+
+            if (gameCount >= board.Length)
             {
                 boardEnable(false);
                 gameStepUp();
@@ -103,11 +96,10 @@ namespace osero
                 return;
             }
 
-            gameCount++;
-            player = (player + 1) % 2;
-            label.Text = turnName[player] + "の番です";
+            currentPlayer = (currentPlayer + 1) % 2;
+            label.Text = turnName[currentPlayer] + "の番です";
         }
-
+        //盤面をtrueで操作可能にする
         public void boardEnable(Boolean b)
         {
             Control[] c;
@@ -148,101 +140,11 @@ namespace osero
             }
         }
 
-        public int[,] aroundStone(int x, int y)
+
+        public Boolean selectStone(int n, int m)
         {
-            int[,] cross = new int[3, 3];
-            for (int i = -1; i <= 1; i++)
-            {
-                for (int j = -1; j <= 1; j++)
-                {
-                    int p = i + x;
-                    int q = j + y;
-                    if (p >= 0 && p < board.GetLength(0) && q >= 0 && q < board.GetLength(1))
-                    {
-                        cross[i + 1, j + 1] = board[p, q];
-                    }
-                }
-            }
-            return cross;
-        }
 
-        public void selectStone(int n)
-        {
-            int row = n / board.GetLength(0);
-            int col = n % board.GetLength(1);
-            int[,] cross = aroundStone(row, col);
-
-            List<int> rows = new List<int>();
-            List<int> cols = new List<int>();
-
-            int m = (n + 1) % 2;
-
-            for (int i = 0; i < cross.GetLength(0); i++)
-            {
-                for (int j = 0; j < cross.GetLength(1); j++)
-                {
-                    int x = row + (i - 1);
-                    int y = col + (j - 1);
-                    if (x >= 0 && x < board.GetLength(0) && y >= 0 && y < board.GetLength(1))
-                    {
-                        if (cross[i, j] == m)
-                        {
-                            rows.Add(i);
-                            cols.Add(j);
-                        }
-                    }
-                }
-            }
-
-            for (int i = 2; i <= board.GetLength(0) - 1; i++)
-            {
-                for (int j = 0; j < rows.Count; j++)
-                {
-                    int x = row + (rows[j] * i);
-                    int y = col + (cols[j] * i);
-                    if (x >= 0 && x < board.GetLength(0) && y >= 0 && y < board.GetLength(1))
-                    {
-                        int d = board[x, y];
-                        if (d != n)
-                        {
-                            rows.RemoveAt(j);
-                            cols.RemoveAt(j);
-                            stoneJudge = false;
-                            return;
-
-                        }
-                    }
-                }
-            }
-
-            for (int i = 2; i <= board.GetLength(0) - 1; i++)
-            {
-                for (int j = 0; j < rows.Count; j++)
-                {
-                    int x = row + (rows[j] * i);
-                    int y = col + (cols[j] * i);
-                    if (x >= 0 && x < board.GetLength(0) && y >= 0 && y < board.GetLength(1))
-                    {
-                        int d = board[x, y];
-                        if (d != n)
-                        {
-                            while (board[x, y] != n)
-                            {
-                                board[x, y] = n;
-                                x -= rows[j];
-                                y -= cols[j];
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!stoneJudge)
-            {
-                player = (player + 1) % 2;
-                label.Text = turnName[player] + "の番です";
-            }
+            return false;
         }
 
         private void judge(int[,] f)
