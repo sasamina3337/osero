@@ -28,7 +28,12 @@ namespace osero
                                                  {0, 0, 0, 0, 0, 0, 0, 0},
                                                  {0, 0, 0, 0, 0, 0, 0, 0}};
 
-        public int currentPlayer, gameCount, step; //stepはgamestepを扱うために設定した数字
+        //周りのストーン数
+        int[,] aroundStone = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 }, { 1, 0 }, { 1, 1 } };
+
+        public int currentPlayer, counterPlayer, gameCount, step; //stepはgamestepを扱うために設定した数字
+
+        private int passCount = 0; //passの数を数える数字
 
         public string[] gameStep = { "スタート", "リセット", "リスタート" }; //startボタンの変更文字
 
@@ -41,6 +46,9 @@ namespace osero
             black = 1,
             white = 2,
         }
+
+        //置ける石のリスト
+        public List<int> selectedStone = new List<int>();
 
         //石の画像と色の対応辞書
         public Dictionary<stoneColor, Image> stoneImg = new Dictionary<stoneColor, Image>()
@@ -59,6 +67,7 @@ namespace osero
         private void start_Click(object sender, EventArgs e)
         {
             currentPlayer = step = 0;
+            counterPlayer = (currentPlayer + 1) % 2;
             gameCount = 4;
             label.Text = turnName[currentPlayer] + "の番です";
             Array.Copy(firstStone, board, board.Length);
@@ -75,12 +84,12 @@ namespace osero
             int numberBox = int.Parse(nameBox.Replace("pictureBox", ""));
             int row = numberBox / board.GetLength(0);
             int col = numberBox % board.GetLength(1);
-            board[row, col] = currentPlayer + 1;
-            if (selectStone(row, col))
+            if (!selectStone(row, col))
             {
-                board[row, col] = 0;
                 return;
             }
+
+            board[row, col] = currentPlayer + 1;
 
             Image img = stoneImg[nowStone];
             clickBox.Image = img;
@@ -96,7 +105,7 @@ namespace osero
                 return;
             }
 
-            currentPlayer = (currentPlayer + 1) % 2;
+            changePlayer();
             label.Text = turnName[currentPlayer] + "の番です";
         }
         //盤面をtrueで操作可能にする
@@ -112,6 +121,7 @@ namespace osero
             }
         }
 
+        //図を書く
         public void Drow(int[,] n)
         {
             Control[] c;
@@ -129,7 +139,7 @@ namespace osero
                 }
             }
         }
-
+        //labelの管理
         public void gameStepUp()
         {
             step = (step + 1) % 3;
@@ -140,12 +150,103 @@ namespace osero
             }
         }
 
-
-        public Boolean selectStone(int n, int m)
+        //石を置いた場所から八方向に探索し、ひっくり返す関数
+        private bool selectStone(int row, int col)
         {
+            stoneColor nowStone = (stoneColor)(currentPlayer + 1);
+            stoneColor enemyStone = (stoneColor)(counterPlayer + 1);
+            bool canPut = false;
 
-            return false;
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    if (dx == 0 && dy == 0) continue;
+                    int x = col + dx;
+                    int y = row + dy;
+                    bool isInBoard = (x >= 0 && x < board.GetLength(0) && y >= 0 && y < board.GetLength(1));
+                    bool isEnemyStone = (isInBoard && board[y, x] == (int)enemyStone);
+                    List<int> reverseList = new List<int>();
+
+                    while (isEnemyStone)
+                    {
+                        reverseList.Add(y * board.GetLength(0) + x);
+                        x += dx;
+                        y += dy;
+                        isInBoard = (x >= 0 && x < board.GetLength(0) && y >= 0 && y < board.GetLength(1));
+                        isEnemyStone = (isInBoard && board[y, x] == (int)enemyStone);
+                    }
+
+                    if (isInBoard && board[y, x] == (int)nowStone)
+                    {
+                        if (reverseList.Count > 0)
+                        {
+                            canPut = true;
+                            foreach (int n in reverseList)
+                            {
+                                board[n / board.GetLength(0), n % board.GetLength(1)] = currentPlayer + 1;
+                                Control[] c = this.Controls.Find("pictureBox" + n.ToString(), true);
+                                PictureBox pic = (PictureBox)c[0];
+                                pic.Image = stoneImg[nowStone];
+                            }
+                        }
+                    }
+                }
+            }
+
+            return canPut;
         }
+
+
+
+        private void changePlayer()
+        {
+            int x = currentPlayer;
+            currentPlayer = counterPlayer;
+            counterPlayer = x;
+
+            if (checkPass())
+            {
+                passCount++;
+                if (passCount >= 2)
+                {
+                    judge(board);
+                    return;
+                }
+                MessageBox.Show(turnName[currentPlayer] + "はパスです。");
+                changePlayer();
+            }
+            else
+            {
+                passCount = 0;
+            }
+
+            label.Text = turnName[currentPlayer] + "の手番です。";
+        }
+
+        //現在の状態がパスか判定する
+        private bool checkPass()
+        {
+            stoneColor nowStone = (stoneColor)(currentPlayer + 1);
+            bool canPut = false;
+
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
+                    if (board[row, col] != (int)stoneColor.none) continue;
+                    if (selectStone(row, col))
+                    {
+                        canPut = true;
+                        break;
+                    }
+                }
+                if (canPut) break;
+            }
+
+            return !canPut;
+        }
+
 
         private void judge(int[,] f)
         {
