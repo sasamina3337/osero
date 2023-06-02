@@ -47,9 +47,6 @@ namespace osero
             white = 2,
         }
 
-        //置ける石のリスト
-        public List<int> selectedStone = new List<int>();
-
         //石の画像と色の対応辞書
         public Dictionary<stoneColor, Image> stoneImg = new Dictionary<stoneColor, Image>()
         {
@@ -105,7 +102,8 @@ namespace osero
                 return;
             }
 
-            changePlayer();
+            currentPlayer = (currentPlayer + 1) % 2;
+            counterPlayer = (currentPlayer + 1) % 2;
             label.Text = turnName[currentPlayer] + "の番です";
         }
         //盤面をtrueで操作可能にする
@@ -196,57 +194,6 @@ namespace osero
 
             return canPut;
         }
-
-
-
-        private void changePlayer()
-        {
-            int x = currentPlayer;
-            currentPlayer = counterPlayer;
-            counterPlayer = x;
-
-            if (checkPass())
-            {
-                passCount++;
-                if (passCount >= 2)
-                {
-                    judge(board);
-                    return;
-                }
-                MessageBox.Show(turnName[currentPlayer] + "はパスです。");
-                changePlayer();
-            }
-            else
-            {
-                passCount = 0;
-            }
-
-            label.Text = turnName[currentPlayer] + "の手番です。";
-        }
-
-        //現在の状態がパスか判定する
-        private bool checkPass()
-        {
-            stoneColor nowStone = (stoneColor)(currentPlayer + 1);
-            bool canPut = false;
-
-            for (int row = 0; row < 8; row++)
-            {
-                for (int col = 0; col < 8; col++)
-                {
-                    if (board[row, col] != (int)stoneColor.none) continue;
-                    if (selectStone(row, col))
-                    {
-                        canPut = true;
-                        break;
-                    }
-                }
-                if (canPut) break;
-            }
-
-            return !canPut;
-        }
-
 
         private void judge(int[,] f)
         {
